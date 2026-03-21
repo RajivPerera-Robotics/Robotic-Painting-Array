@@ -77,7 +77,9 @@ void readInputManager(PaintingManager* manager){
     if (Serial.available() > 0) {
       String input = Serial.readStringUntil('\n');
       input.trim();
-    if (input == "cascade") manager->cascadeHome(MTR_MIN);
+    if (input == "cascade home") manager->cascadeHome(MTR_MIN);
+    else if (input == "cascade fwd") manager->cascadeMoveAll(MTR_MIN, 2000, 2000);
+    else if (input == "cascade rev") manager->cascadeMoveAll(-MTR_MIN, 2000, 2000);
     else if (input == "homeall") manager->homeAll(MTR_MIN);
     else if (input == "fwd") manager->timedMoveAll(MTR_MIN, 2000);
     else if (input == "rev") manager->timedMoveAll(-MTR_MIN, 2000);
@@ -89,11 +91,20 @@ const int fwd_pin = 0;
 const int rev_pin = 1;
 const int hall_pin = 20;
 const int boundary = 256;
-// painting (fwd_pin, rev_pin, encoder_pin, hall_pin)
-PaintingPins p1(0, 1, 23, 20);
 
-PaintingPins* allPaintings[1] = { &p1};
-PaintingManager manager(allPaintings, 1);
+// one painting on the breadboard
+// PaintingPins p1(0, 1, 99, 20);
+
+// painting (fwd_pin, rev_pin, encoder_pin, hall_pin)1
+PaintingPins p1(0,1,99,21);
+PaintingPins p2(2,3,99,20);
+PaintingPins p3(4,5,99,19);
+
+
+
+const int numPaintings = 3;
+PaintingPins* allPaintings[numPaintings] = { &p1, &p2, &p3};
+PaintingManager manager(allPaintings, numPaintings);
 
 
 void setup() {
@@ -108,8 +119,6 @@ void loop() {
   {
     lastTime = millis();
     readInputManager(&manager);
-    // Serial.print("Encoder value; ");
-    // Serial.println(painting1.readEncoder());
   }
 
 

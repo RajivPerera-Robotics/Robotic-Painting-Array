@@ -31,7 +31,7 @@ public:
   // cascade home — each painting waits 500ms * index before starting
   void cascadeHome(int speed, uint32_t stepDelayMs = 500) {
     for (int i = 0; i < numPaintings; i++) {
-      paintings[i]->startHoming(speed, i * stepDelayMs);
+      paintings[i]->delayHoming(speed, i * stepDelayMs);
     }
   }
 
@@ -43,11 +43,16 @@ public:
       paintings[i]->startTimedMove(speed, durationMs);
     }
   }
-
+  void cascadeMoveAll(int speed, uint32_t durationMs, uint32_t delayMs){
+    for (int i=0; i < numPaintings; i++){
+      paintings[i]->delayTimedMove(speed, durationMs, delayMs*i);
+      Serial.println(delayMs*i);
+    }
+  }
   // home all simultaneously
   void homeAll(int speed) {
     for (int i = 0; i < numPaintings; i++) {
-      paintings[i]->startHoming(speed);
+      paintings[i]->delayHoming(speed);
     }
   }
 };
