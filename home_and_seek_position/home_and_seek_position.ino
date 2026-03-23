@@ -61,8 +61,9 @@ void readInputPainting(PaintingPins* painting1){
         return;
       }
       if (isValidNumber(input)) {
-        Serial.print("Driving motor at ");
-        Serial.println(input);
+        Serial.print("moving to ");
+        Serial.print(input);
+        Serial.println(" degrees");
         painting1->moveTo(input.toInt(), 20, 1);
         return;
       } 
@@ -96,7 +97,7 @@ const int boundary = 256;
 // PaintingPins p1(0, 1, 99, 20);
 
 // painting (fwd_pin, rev_pin, encoder_pin, hall_pin)1
-PaintingPins p1(0,1,99,21);
+PaintingPins p1(0,1,24,21);
 PaintingPins p2(2,3,99,20);
 PaintingPins p3(4,5,99,19);
 
@@ -118,7 +119,8 @@ void loop() {
   if (millis() - lastTime >= 100)
   {
     lastTime = millis();
-    readInputManager(&manager);
+    // readInputManager(&manager);
+    readInputPainting(&p1);
   }
 
 
