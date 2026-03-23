@@ -36,7 +36,6 @@ class PaintingPins{
     pinMode(revPin, OUTPUT);
     pinMode(encPin, INPUT);
     pinMode(homePin, INPUT);
-    }
 
   }
   void drive(int speed) {
