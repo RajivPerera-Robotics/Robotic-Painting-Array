@@ -19,7 +19,6 @@ class PaintingPins{
     int encoderOffset = 0;
     int driveSpeed = MTR_MIN;
     PaintingState state = PaintingState::IDLE;
-
     // For TIMED_MOVE
     uint32_t moveStartTime = 0;
     uint32_t moveDuration = 0;
@@ -55,13 +54,13 @@ class PaintingPins{
     }
 }
 
-  float avgReading(){
-    float reading_deg = (analogRead(encPin) + analogRead(encPin) + analogRead(encPin))/(3*1024.0)*360.0;
+  float readEncoder(){
+    float reading_deg = ((analogRead(encPin)+analogRead(encPin)+analogRead(encPin))/(1024.0*3))*360;
     return reading_deg;
   }
 
-  float readEncoder(){
-    float adjustedReading = avgReading() - encoderOffset;
+  float normalizedEncoder(){
+    float adjustedReading =  readEncoder() - encoderOffset;
     if (adjustedReading < 0){
       adjustedReading = adjustedReading + 360;
     }
@@ -77,7 +76,7 @@ class PaintingPins{
   }
 
   void zero(){
-    encoderOffset = avgReading();
+    encoderOffset = readEncoder();
     Serial.print("encoder Offset set to ");
     Serial.println(encoderOffset);
   }
@@ -135,10 +134,10 @@ class PaintingPins{
   }
 
   void moveTo(int pos_degrees, int speed, int tolerance){
-    float error = pos_degrees - readEncoder();
+    float error = pos_degrees - normalizedEncoder();
     while (abs(error)>tolerance){
       drive(speed * (error / abs(error)));
-      error = pos_degrees - readEncoder();
+      error = pos_degrees - normalizedEncoder();
     }
     drive(0);
   }

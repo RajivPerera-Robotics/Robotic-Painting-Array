@@ -40,7 +40,7 @@ void readInputPainting(PaintingPins* painting1){
 
       if (input == "e"){
         Serial.print("Encoder value: ");
-        Serial.println(painting1->readEncoder());
+        Serial.println(painting1->normalizedEncoder());
         return;
       }
       if (input == "h"){
@@ -56,7 +56,7 @@ void readInputPainting(PaintingPins* painting1){
         painting1->drive(-20);
         return;
       }
-      if (input == "stop"){
+      if (input == "s"){ // stop
         painting1->drive(0);
         return;
       }
@@ -119,8 +119,8 @@ void loop() {
   if (millis() - lastTime >= 100)
   {
     lastTime = millis();
-    // readInputManager(&manager);
-    readInputPainting(&p1);
+    readInputManager(&manager);
+    // readInputPainting(&p1);
   }
 
 
