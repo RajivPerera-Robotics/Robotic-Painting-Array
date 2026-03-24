@@ -156,6 +156,7 @@ class PaintingPins{
         if (millis()- waitStartTime >= waitDuration){
           startTimedMove(driveSpeed, moveDuration);
         }
+        break;
       case PaintingState::HOMING:
         noBlockHome();
         break;

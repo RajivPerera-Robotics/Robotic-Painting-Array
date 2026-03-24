@@ -29,47 +29,26 @@ void readInputPainting(PaintingPins* painting1){
     if (Serial.available() > 0) {
       String input = Serial.readStringUntil('\n');
       input.trim();
-      if (input == "zero"){
-        painting1->zero();
-        return;
-      }
-      if (input == "home"){
-        painting1->home();
-        return;
-      }
-
-      if (input == "e"){
+      if (input == "zero") painting1->zero();
+      else if (input == "home") painting1->home();
+      else if (input == "e"){
         Serial.print("Encoder value: ");
         Serial.println(painting1->normalizedEncoder());
-        return;
       }
-      if (input == "h"){
+      else if (input == "h"){
         Serial.print("Hall value: ");
         Serial.println(painting1->readHome());
-        return;
       }
-      if (input == "df"){ // drive forward
-        painting1->drive(20);
-        return;
-      }
-      if (input == "dr"){ // drive reverse
-        painting1->drive(-20);
-        return;
-      }
-      if (input == "s"){ // stop
-        painting1->drive(0);
-        return;
-      }
-      if (isValidNumber(input)) {
+      else if (input == "df") painting1->drive(20);// drive forward
+      else if (input == "dr") painting1->drive(-20); // drive reverse
+      else if (input == "s") painting1->drive(0); // stop
+      else if (isValidNumber(input)) {
         Serial.print("moving to ");
         Serial.print(input);
         Serial.println(" degrees");
         painting1->moveTo(input.toInt(), 20, 1);
-        return;
       } 
-      else {
-        Serial.println("Invalid input: please enter a whole number between -256 and 256.");
-      }
+      else Serial.println("Invalid input: please enter a whole number between -256 and 256.");
     }
 }
 
@@ -79,8 +58,8 @@ void readInputManager(PaintingManager* manager){
       String input = Serial.readStringUntil('\n');
       input.trim();
     if (input == "cascade home") manager->cascadeHome(MTR_MIN);
-    else if (input == "cascade fwd") manager->cascadeMoveAll(MTR_MIN, 2000, 2000);
-    else if (input == "cascade rev") manager->cascadeMoveAll(-MTR_MIN, 2000, 2000);
+    else if (input == "cascade fwd") manager->cascadeMoveAll(MTR_MIN, 4000, 1000);
+    else if (input == "cascade rev") manager->cascadeMoveAll(-MTR_MIN, 4000, 1000);
     else if (input == "homeall") manager->homeAll(MTR_MIN);
     else if (input == "fwd") manager->timedMoveAll(MTR_MIN, 2000);
     else if (input == "rev") manager->timedMoveAll(-MTR_MIN, 2000);
