@@ -1,4 +1,5 @@
 #include "PaintingPins.h"
+#include "PaintingPinsI2C.h"
 #include "PaintingManager.h"
 #include "Wire.h"
 
@@ -25,28 +26,28 @@ bool isValidNumber(String str) {
   return true;
 }
 
-void readInputPainting(PaintingPins* painting1){
+void readInputPainting(PaintingPins* painting){
     if (Serial.available() > 0) {
       String input = Serial.readStringUntil('\n');
       input.trim();
-      if (input == "zero") painting1->zero();
-      else if (input == "home") painting1->home();
+      if (input == "z") painting->zero();
+      else if (input == "home") painting->home();
       else if (input == "e"){
         Serial.print("Encoder value: ");
-        Serial.println(painting1->normalizedEncoder());
+        Serial.println(painting->normalizedEncoder());
       }
       else if (input == "h"){
         Serial.print("Hall value: ");
-        Serial.println(painting1->readHome());
+        Serial.println(painting->readHome());
       }
-      else if (input == "df") painting1->drive(20);// drive forward
-      else if (input == "dr") painting1->drive(-20); // drive reverse
-      else if (input == "s") painting1->drive(0); // stop
+      else if (input == "df") painting->drive(20);// drive forward
+      else if (input == "dr") painting->drive(-20); // drive reverse
+      else if (input == "s") painting->drive(0); // stop
       else if (isValidNumber(input)) {
         Serial.print("moving to ");
         Serial.print(input);
         Serial.println(" degrees");
-        painting1->moveTo(input.toInt(), 20, 1);
+        painting->moveTo(input.toInt(), 20, 1);
       } 
       else Serial.println("Invalid input: please enter a whole number between -256 and 256.");
     }
@@ -72,24 +73,24 @@ const int rev_pin = 1;
 const int hall_pin = 20;
 const int boundary = 256;
 
-// one painting on the breadboard
-// PaintingPins p1(0, 1, 99, 20);
 
-// painting (fwd_pin, rev_pin, encoder_pin, hall_pin)1
-PaintingPins p1(0,1,24,21);
-PaintingPins p2(2,3,99,20);
-PaintingPins p3(4,5,99,19);
-
-
+  // PaintingPins(int fwd_pin, int rev_pin, int encoder_pin, int home_pin)
 
 const int numPaintings = 3;
-PaintingPins* allPaintings[numPaintings] = { &p1, &p2, &p3};
-PaintingManager manager(allPaintings, numPaintings);
+// how to define paintings
+// PaintingPins p1(1,2,3,4) // example
+// PaintingPins* allPaintings[numPaintings] = { &p1, &p2, &p3};
+// PaintingManager manager(allPaintings, numPaintings);
+
+  // PaintingPinsI2C(int fwd_pin, int rev_pin, int enc_pin, int home_pin,
+  //               int sda_pin, int scl_pin, int dir_pin = 4)
+PaintingPinsI2C paintingi2c(15,14,26,27, 24, 25);
 
 
 void setup() {
   Serial.begin(115200);
-  manager.begin();
+  // manager.begin();
+  paintingi2c.begin();
 }
 
 void loop() {
@@ -98,8 +99,9 @@ void loop() {
   if (millis() - lastTime >= 100)
   {
     lastTime = millis();
-    readInputManager(&manager);
+    // readInputManager(&manager);
     // readInputPainting(&p1);
+    readInputPainting(&paintingi2c);
   }
 
 

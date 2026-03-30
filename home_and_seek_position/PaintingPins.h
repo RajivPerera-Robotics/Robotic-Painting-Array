@@ -1,7 +1,7 @@
 #pragma once
 // #include AS5600.h
 
-const int MTR_MIN = 25;
+const int MTR_MIN = 20;
 const int MTR_MAX = 50;
 
 enum class PaintingState {
@@ -14,11 +14,14 @@ enum class PaintingState {
 
 
 class PaintingPins{
-  private:
-    int fwdPin, revPin, encPin ,homePin;
+  protected:
+    int fwdPin, revPin, encPin, homePin;
     int encoderOffset = 0;
+
+  private:
     int driveSpeed = MTR_MIN;
     PaintingState state = PaintingState::IDLE;
+
     // For TIMED_MOVE
     uint32_t moveStartTime = 0;
     uint32_t moveDuration = 0;
@@ -54,12 +57,12 @@ class PaintingPins{
     }
 }
 
-  float readEncoder(){
+  virtual float readEncoder(){
     float reading_deg = ((analogRead(encPin)+analogRead(encPin)+analogRead(encPin))/(1024.0*3))*360;
     return reading_deg;
   }
 
-  float normalizedEncoder(){
+  virtual float normalizedEncoder(){
     float adjustedReading =  readEncoder() - encoderOffset;
     if (adjustedReading < 0){
       adjustedReading = adjustedReading + 360;
@@ -69,6 +72,7 @@ class PaintingPins{
 
   bool readHome(){
     return analogRead(homePin)<100;
+    // return analogRead(homePin)<100;
   }
 
     bool isIdle() {
