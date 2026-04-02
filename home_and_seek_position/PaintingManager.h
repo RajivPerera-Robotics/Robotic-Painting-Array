@@ -7,7 +7,8 @@ private:
   int numPaintings;
 
 public:
-  PaintingManager(PaintingPins* p[], int count) : numPaintings(count) {
+  PaintingManager(PaintingPins* p[], int count)
+    : numPaintings(count) {
     paintings = new PaintingPins*[count];
     for (int i = 0; i < count; i++) paintings[i] = p[i];
   }
@@ -43,10 +44,10 @@ public:
       paintings[i]->startTimedMove(speed, durationMs);
     }
   }
-  void cascadeMoveAll(int speed, uint32_t durationMs, uint32_t delayMs){
-    for (int i=0; i < numPaintings; i++){
-      paintings[i]->delayTimedMove(speed, durationMs, delayMs*i);
-      Serial.println(delayMs*i);
+  void cascadeMoveAll(int speed, uint32_t durationMs, uint32_t delayMs) {
+    for (int i = 0; i < numPaintings; i++) {
+      paintings[i]->delayTimedMove(speed, durationMs, delayMs * i);
+      Serial.println(delayMs * i);
     }
   }
   // home all simultaneously
@@ -56,5 +57,3 @@ public:
     }
   }
 };
-
-
