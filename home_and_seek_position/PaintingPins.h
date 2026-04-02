@@ -1,7 +1,7 @@
 #pragma once
 // #include AS5600.h
 
-const int MTR_MIN = 20;
+const int MTR_MIN = 22;
 const int MTR_MAX = 50;
 
 enum class PaintingState {

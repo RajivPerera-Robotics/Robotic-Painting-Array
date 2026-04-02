@@ -1,5 +1,6 @@
 #pragma once
 #include "PaintingPins.h"
+#include "TCA9548.h"
 
 class PaintingManager {
 private:

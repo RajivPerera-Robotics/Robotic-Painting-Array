@@ -2,6 +2,7 @@
 #include "PaintingPinsI2C.h"
 #include "PaintingManager.h"
 #include "Wire.h"
+#include "TCA9548.h"
 
 bool isValidNumber(String str) {
   if (str.length() == 0) return false;
@@ -40,8 +41,8 @@ void readInputPainting(PaintingPins* painting){
         Serial.print("Hall value: ");
         Serial.println(painting->readHome());
       }
-      else if (input == "df") painting->drive(20);// drive forward
-      else if (input == "dr") painting->drive(-20); // drive reverse
+      else if (input == "df") painting->drive(22);// drive forward
+      else if (input == "dr") painting->drive(-22); // drive reverse
       else if (input == "s") painting->drive(0); // stop
       else if (isValidNumber(input)) {
         Serial.print("moving to ");
@@ -84,7 +85,14 @@ const int numPaintings = 3;
 
   // PaintingPinsI2C(int fwd_pin, int rev_pin, int enc_pin, int home_pin,
   //               int sda_pin, int scl_pin, int dir_pin = 4)
-PaintingPinsI2C paintingi2c(15,14,26,27, 24, 25);
+
+  // PaintingPinsI2C(int fwd_pin, int rev_pin, int enc_pin, int home_pin,
+  //                 int sda_pin, int scl_pin, PCA9546& multi_plexer, int mult_channel)
+
+
+PCA9546 MP(0x70, &Wire2);
+
+PaintingPinsI2C paintingi2c(15,14,26,27, 24, 25, MP, 0);
 
 
 void setup() {
