@@ -71,7 +71,7 @@ class PaintingPins{
   }
 
   bool readHome(){
-    return analogRead(homePin)<100;
+    return analogRead(homePin)<200;
     // return analogRead(homePin)<100;
   }
 
