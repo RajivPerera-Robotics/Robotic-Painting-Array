@@ -26,7 +26,9 @@ public:
         Wire2.setSCL(sclPin);
         Wire2.begin();
         if (multiplexer.begin()==false){
-            Serial.println("Multiplexer not connected!");
+            Serial.print("Multiplexer not connected");
+            Serial.print(" for board on multiplexer ");
+            Serial.print(multChannel);
         }
         multiplexer.enableChannel(multChannel);
         as5600.begin();
@@ -35,6 +37,8 @@ public:
             Serial.println("WARNING: AS5600 not connected!");
         }
         else {Serial.println("Connected to as5600!");}
+        Serial.print("Setup complete for painting on multichannel");
+        Serial.println(multChannel);
     }
 
     float readEncoder() override {

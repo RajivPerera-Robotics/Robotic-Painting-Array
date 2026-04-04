@@ -48,7 +48,7 @@ void readInputPainting(PaintingPins* painting){
         Serial.print("moving to ");
         Serial.print(input);
         Serial.println(" degrees");
-        painting->moveTo(input.toInt(), 20, 1);
+        painting->degreeMove(input.toInt(), 20, 1);
       } 
       else Serial.println("Invalid input: please enter a whole number between -256 and 256.");
     }
@@ -87,7 +87,6 @@ const int boundary = 256;
 
   // PaintingPins(int fwd_pin, int rev_pin, int encoder_pin, int home_pin)
 
-const int numPaintings = 3;
 // how to define paintings
 // PaintingPins p1(1,2,3,4) // example
 // PaintingPins* allPaintings[numPaintings] = { &p1, &p2, &p3};
@@ -101,21 +100,21 @@ const int numPaintings = 3;
 
 
 PCA9546 MP(0x70, &Wire2);
-PCA9546 MP2(0x71, &Wire2)
+PCA9546 MP2(0x71, &Wire2);
 
-PaintingPinsI2c p1(1, 0, 99, 19, 25, 24, MP, 0);
-PaintingPinsI2c p2(3, 2, 99, 18, 25, 24, MP, 1);
-PaintingPinsI2c p3(5, 4, 99, 17, 25, 24, MP, 2);
+PaintingPinsI2C p1(0, 1, 99, 19, 25, 24, MP, 0);
+PaintingPinsI2C p2(2, 3, 99, 18, 25, 24, MP, 1);
+PaintingPinsI2C p3(4, 5, 99, 17, 25, 24, MP, 2);
 
-int numPaintings = 3;
+const int numPaintings = 3;
 PaintingPins* allPaintings[numPaintings] = {&p1, &p2, &p3};
 PaintingManager manager(allPaintings, numPaintings);
 
 void setup() {
   Serial.begin(115200);
-  Serial1.begin(115200);
+  Serial8.begin(115200);
   // manager.begin();
-  paintingi2c.begin();
+  p1.begin();
 }
 
 void loop() {
@@ -124,7 +123,8 @@ void loop() {
   if (millis() - lastTime >= 100)
   {
     lastTime = millis();
-    readInputManager(&manager, &Serial1);
+    readInputPainting(&p1);
+    // readInputManager(&manager, Serial);
   }
 
 

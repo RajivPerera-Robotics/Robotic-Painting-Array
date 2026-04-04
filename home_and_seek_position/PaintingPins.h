@@ -1,7 +1,7 @@
 #pragma once
 // #include AS5600.h
 
-const int MTR_MIN = 22;
+const int MTR_MIN = 30;
 const int MTR_MAX = 50;
 const int CASCADE_DELAY = 500;
 const float POSITION_TOLERANCE = .5;
@@ -149,7 +149,7 @@ class PaintingPins{
 
       case PaintingState::MOVE_DELAY:
         if (millis()- waitStartTime >= waitDuration){
-          startTimedMove(driveSpeed, moveDuration);
+          degreeMove(targetPos, MTR_MIN, POSITION_TOLERANCE);
         }
         break;
       case PaintingState::HOMING:
