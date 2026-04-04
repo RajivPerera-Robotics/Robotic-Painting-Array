@@ -14,11 +14,23 @@ public:
     for (int i = 0; i < count; i++) paintings[i] = p[i];
   }
 
+  float enforce360(float input){
+    float output;
+    if (input<0.0){
+      output = input+360;
+    }
+    else if (input>360.0){
+      output = input-360;
+    }
+    else{
+      output = input;
+    }
+    return output;
+  }
   void begin() {
     for (int i = 0; i < numPaintings; i++) paintings[i]->begin();
   }
 
-  // Call every loop — this is the heartbeat
   void update() {
     for (int i = 0; i < numPaintings; i++) paintings[i]->update();
   }
@@ -30,28 +42,33 @@ public:
     return true;
   }
 
-  // cascade home — each painting waits 500ms * index before starting
-  void cascadeHome(int speed, uint32_t stepDelayMs = 500) {
+  void cascadeHome(uint32_t stepDelayMs = 500, int speed=MTR_MIN) {
     for (int i = 0; i < numPaintings; i++) {
       paintings[i]->delayHoming(speed, i * stepDelayMs);
     }
   }
 
-  // move all simultaneously for a fixed duration
-  // speed > 0 = forward, speed < 0 = reverse
-  // durationMs controls how long they run (determines effective distance)
-  void timedMoveAll(int speed, uint32_t durationMs) {
+  void degreeMoveAll( float targetPos, relative=false, int speed=MTR_MIN) {
+    float current_pos;
     for (int i = 0; i < numPaintings; i++) {
-      paintings[i]->startTimedMove(speed, durationMs);
+      if (relative){
+        current_pos = paintings[i]->normalizedEncoder();
+        paintings[i]->degreeMove(enforce360(targetPos+current_pos), speed);
+
+      }
+      paintings[i]->degreeMove(targetPos, speed);
     }
   }
-  void cascadeMoveAll(int speed, uint32_t durationMs, uint32_t delayMs) {
+  void cascadeMoveAll(uint32_t targetPos, uint32_t delayMs,  bool relative=false, int speed=MTR_MIN) {
+    float current_pos;
     for (int i = 0; i < numPaintings; i++) {
-      paintings[i]->delayTimedMove(speed, durationMs, delayMs * i);
-      Serial.println(delayMs * i);
+      if (relative){
+          current_pos = paintings[i]->normalizedEncoder();
+          paintings[i]->delayDegreeMove(enforce360(targetPos+current_pos), delayMs * i, speed);
+      }
+      else{paintings[i]->delayDegreeMove(targetPos, delayMs * i, speed);}
     }
   }
-  // home all simultaneously
   void homeAll(int speed) {
     for (int i = 0; i < numPaintings; i++) {
       paintings[i]->delayHoming(speed);

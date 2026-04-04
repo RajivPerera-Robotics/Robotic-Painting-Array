@@ -3,11 +3,11 @@
 
 const int MTR_MIN = 22;
 const int MTR_MAX = 50;
-
+const float POSITION_TOLERANCE = .5;
 enum class PaintingState {
   IDLE,
   HOMING,           // driving until home sensor triggers
-  TIMED_MOVE,       // moving for a fixed duration
+  DEGREE_MOVE,       // moving for a fixed duration
   HOME_DELAY,       // cascade delay before starting
   MOVE_DELAY        // cascade delay before a degree move
 };
@@ -20,6 +20,7 @@ class PaintingPins{
 
   private:
     int driveSpeed = MTR_MIN;
+    float targetPos = 0;
     PaintingState state = PaintingState::IDLE;
 
     // For TIMED_MOVE
@@ -72,10 +73,9 @@ class PaintingPins{
 
   bool readHome(){
     return analogRead(homePin)<200;
-    // return analogRead(homePin)<100;
   }
 
-    bool isIdle() {
+  bool isIdle() {
     return state == PaintingState::IDLE;
   }
 
@@ -84,14 +84,7 @@ class PaintingPins{
     Serial.print("encoder Offset set to ");
     Serial.println(encoderOffset);
   }
-  void home(){
-    while (!readHome()){
-      drive(MTR_MIN);
-    }
-    Serial.println("Homing completed");
-    drive(0);
-    zero();
-  }
+
 
   void delayHoming(int speed, uint32_t delayMs = 0) {
     driveSpeed = speed;
@@ -104,7 +97,8 @@ class PaintingPins{
     }
   }
 
-  void noBlockHome(){
+  void home(){
+      state = PaintingState::HOMING;
       if (readHome()) {
           drive(0);
           state = PaintingState::IDLE;
@@ -115,35 +109,32 @@ class PaintingPins{
         }
   }
 
-  void delayTimedMove(int speed, uint32_t durationMs, uint32_t delayMs){
+  void delayDegreeMove(uint32_t targetPos,  uint32_t delayMs, int speed=MTR_MIN, float tolerance=POSITION_TOLERANCE){
     driveSpeed = speed;
+    targetPos = targetPos;
     if (delayMs > 0){
       waitStartTime = millis();
       waitDuration = delayMs;
-      moveDuration = durationMs;
       state = PaintingState::MOVE_DELAY;
     }
     else{
-      startTimedMove(speed, durationMs);
+      degreeMove(targetPos, speed, tolerance);
     }
     
 
   }
-  void startTimedMove(int speed, uint32_t durationMs) {
-    driveSpeed = speed;
-    moveStartTime = millis();
-    moveDuration = durationMs;
-    state = PaintingState::TIMED_MOVE;
-    drive(driveSpeed);
-  }
 
-  void moveTo(int pos_degrees, int speed, int tolerance){
+  void degreeMove(float pos_degrees, float speed=MTR_MIN, float tolerance=POSITION_TOLERANCE){
+    // state will be PaintingState::TimedMove
+    state = PaintingState::DEGREE_MOVE;
     float error = pos_degrees - normalizedEncoder();
-    while (abs(error)>tolerance){
+    if (abs(error)>tolerance){
       drive(speed * (error / abs(error)));
-      error = pos_degrees - normalizedEncoder();
     }
-    drive(0);
+    else{
+      drive(0);
+      state = PaintingState::IDLE;
+}
   }
 
   void update() {
@@ -151,7 +142,6 @@ class PaintingPins{
 
       case PaintingState::HOME_DELAY:
         if (millis() - waitStartTime >= waitDuration) {
-          // Delay elapsed — start the actual homing
           state = PaintingState::HOMING;
         }
         break;
@@ -162,14 +152,11 @@ class PaintingPins{
         }
         break;
       case PaintingState::HOMING:
-        noBlockHome();
+        home();
         break;
 
-      case PaintingState::TIMED_MOVE:
-        if (millis() - moveStartTime >= moveDuration) {
-          drive(0);
-          state = PaintingState::IDLE;
-        }
+      case PaintingState::DEGREE_MOVE:
+        degreeMove(targetPos, MTR_MIN, POSITION_TOLERANCE);
         // else: keep driving — already set in startTimedMove()
         break;
 
