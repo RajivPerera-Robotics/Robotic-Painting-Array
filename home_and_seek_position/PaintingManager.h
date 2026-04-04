@@ -59,7 +59,7 @@ public:
       paintings[i]->degreeMove(targetPos, speed);
     }
   }
-  void cascadeMoveAll(uint32_t targetPos, uint32_t delayMs,  bool relative=false, int speed=MTR_MIN) {
+  void cascadeMoveAll(uint32_t targetPos,  bool relative=false, uint32_t delayMs, int speed=MTR_MIN) {
     float current_pos;
     for (int i = 0; i < numPaintings; i++) {
       if (relative){

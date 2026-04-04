@@ -60,20 +60,20 @@ void readInputManager(PaintingManager* manager){
       String input = Serial.readStringUntil('\n');
       input.trim();
     if (input == "cascade home") manager->cascadeHome(MTR_MIN);
-    else if (input == "cascade 90 rel") manager->cascadeMoveAll(90, 1000, true);
-    else if (input == "cascade 90 abs") manager->cascadeMoveAll(90, 1000, false);
-    else if (input == "cascade 45 rel") manager->cascadeMoveAll(45, 1000, true);
-    else if (input == "cascade 45 abs") manager->cascadeMoveAll(45, 1000, false);
-    else if (input == "cascade rev") manager->cascadeMoveAll(-MTR_MIN, 4000, 1000);
+    else if (input == "cascade 90 rel") manager->cascadeMoveAll(90, true, CASCADE_DELAY);
+    else if (input == "cascade 90 abs") manager->cascadeMoveAll(90, false, CASCADE_DELAY);
+    else if (input == "cascade 45 rel") manager->cascadeMoveAll(45, true, CASCADE_DELAY);
+    else if (input == "cascade 45 abs") manager->cascadeMoveAll(45, false, CASCADE_DELAY);
+    else if (input == "cascade rev") manager->cascadeMoveAll(45, 1000, CASCADE_DELAY);
     else if (input == "homeall") manager->homeAll(MTR_MIN);
     else if (input == "fwd 90 rel") manager->degreeMoveAll(90, true);
-    else if (input == "fwd 90 abs") manager->cascadeMoveAll(90, false);
-    else if (input == "fwd 45 rel") manager->cascadeMoveAll(45, true);
-    else if (input == "fwd 45 abs") manager->cascadeMoveAll(45, false);
+    else if (input == "fwd 90 abs") manager->degreeMoveAll(90, false);
+    else if (input == "fwd 45 rel") manager->degreeMoveAll(45, true);
+    else if (input == "fwd 45 abs") manager->degreeMoveAll(45, false);
     else if (input == "rev 90 rel") manager->degreeMoveAll(90, true, -MTR_MIN);
-    else if (input == "rev 90 abs") manager->cascadeMoveAll(90, false, -MTR_MIN);
-    else if (input == "rev 45 rel") manager->cascadeMoveAll(45, true, -MTR_MIN);
-    else if (input == "rev 45 abs") manager->cascadeMoveAll(45, false, -MTR_MIN);
+    else if (input == "rev 90 abs") manager->degreeMoveAll(90, false, -MTR_MIN);
+    else if (input == "rev 45 rel") manager->degreeMoveAll(45, true, -MTR_MIN);
+    else if (input == "rev 45 abs") manager->degreeMoveAll(45, false, -MTR_MIN);
     }
 }
 

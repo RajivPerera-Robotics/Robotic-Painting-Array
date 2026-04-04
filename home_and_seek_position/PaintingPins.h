@@ -3,6 +3,7 @@
 
 const int MTR_MIN = 22;
 const int MTR_MAX = 50;
+const int CASCADE_DELAY = 500;
 const float POSITION_TOLERANCE = .5;
 enum class PaintingState {
   IDLE,
