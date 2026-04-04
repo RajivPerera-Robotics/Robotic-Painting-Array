@@ -1,9 +1,6 @@
 #include <WiFi.h>
 #include <WebServer.h>
 
-const char* ssid = "your_network";
-const char* password = "your_password";
-
 WebServer server(80);
 
 const char webpage[] PROGMEM = R"rawstring(
@@ -13,15 +10,28 @@ const char webpage[] PROGMEM = R"rawstring(
 <body style="font-family: sans-serif; max-width: 320px; margin: 0 auto; padding: 1.5rem 1rem;">
   <p style="font-size: 18px; font-weight: 500;">Painting array control</p>
 
-  <p style="font-size: 12px; color: gray; text-transform: uppercase; margin: 1.5rem 0 0.5rem;">Cascade</p>
+  <p style="font-size: 12px; color: gray; text-transform: uppercase; margin: 1.5rem 0 0.5rem;">Homing</p>
   <button onclick="send('cascade home')">Cascade home</button>
-  <button onclick="send('cascade fwd')">Cascade forward</button>
+  <button onclick="send('homeall')">Home all</button>
+
+  <p style="font-size: 12px; color: gray; text-transform: uppercase; margin: 1.5rem 0 0.5rem;">Cascade move</p>
+  <button onclick="send('cascade 90 rel')">Cascade 90 relative</button>
+  <button onclick="send('cascade 90 abs')">Cascade 90 absolute</button>
+  <button onclick="send('cascade 45 rel')">Cascade 45 relative</button>
+  <button onclick="send('cascade 45 abs')">Cascade 45 absolute</button>
   <button onclick="send('cascade rev')">Cascade reverse</button>
 
-  <p style="font-size: 12px; color: gray; text-transform: uppercase; margin: 1.5rem 0 0.5rem;">All paintings</p>
-  <button onclick="send('homeall')">Home all</button>
-  <button onclick="send('fwd')">Forward</button>
-  <button onclick="send('rev')">Reverse</button>
+  <p style="font-size: 12px; color: gray; text-transform: uppercase; margin: 1.5rem 0 0.5rem;">All — forward</p>
+  <button onclick="send('fwd 90 rel')">Forward 90 relative</button>
+  <button onclick="send('fwd 90 abs')">Forward 90 absolute</button>
+  <button onclick="send('fwd 45 rel')">Forward 45 relative</button>
+  <button onclick="send('fwd 45 abs')">Forward 45 absolute</button>
+
+  <p style="font-size: 12px; color: gray; text-transform: uppercase; margin: 1.5rem 0 0.5rem;">All — reverse</p>
+  <button onclick="send('rev 90 rel')">Reverse 90 relative</button>
+  <button onclick="send('rev 90 abs')">Reverse 90 absolute</button>
+  <button onclick="send('rev 45 rel')">Reverse 45 relative</button>
+  <button onclick="send('rev 45 abs')">Reverse 45 absolute</button>
 
   <p id="status" style="font-size: 13px; color: gray; text-align: center; margin-top: 1rem;"></p>
 
@@ -50,14 +60,11 @@ const char webpage[] PROGMEM = R"rawstring(
 )rawstring";
 
 void setup() {
+  Serial.begin(115200);
   Serial2.begin(115200, SERIAL_8N1, 16, 17);
 
-  // WiFi.begin(ssid, password);
   WiFi.softAP("PaintingControl", "password123");
-  Serial.println(WiFi.softAPIP()); // usually 192.168.4.1
-
-  // while (WiFi.status() != WL_CONNECTED) delay(500);
-  // Serial.println(WiFi.localIP()); // open this IP in your browser
+  Serial.println(WiFi.softAPIP());
 
   server.on("/", []() {
     server.send(200, "text/html", webpage);

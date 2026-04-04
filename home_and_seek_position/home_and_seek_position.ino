@@ -41,8 +41,8 @@ void readInputPainting(PaintingPins* painting){
         Serial.print("Hall value: ");
         Serial.println(painting->readHome());
       }
-      else if (input == "df") painting->drive(22);// drive forward
-      else if (input == "dr") painting->drive(-22); // drive reverse
+      else if (input == "df") painting->drive(MTR_MIN);// drive forward
+      else if (input == "dr") painting->drive(-MTR_MIN); // drive reverse
       else if (input == "s") painting->drive(0); // stop
       else if (isValidNumber(input)) {
         Serial.print("moving to ");
@@ -54,10 +54,10 @@ void readInputPainting(PaintingPins* painting){
     }
 }
 
-void readInputManager(PaintingManager* manager){
+void readInputManager(PaintingManager* manager, Stream& serial){
     manager->update();
-    if (Serial.available() > 0) {
-      String input = Serial.readStringUntil('\n');
+    if (serial.available() > 0) {
+      String input = serial.readStringUntil('\n');
       input.trim();
     if (input == "cascade home") manager->cascadeHome(MTR_MIN);
     else if (input == "cascade 90 rel") manager->cascadeMoveAll(90, true, CASCADE_DELAY);
@@ -76,6 +76,7 @@ void readInputManager(PaintingManager* manager){
     else if (input == "rev 45 abs") manager->degreeMoveAll(45, false, -MTR_MIN);
     }
 }
+
 
 const int encoder_pin = 23;
 const int fwd_pin = 0;
@@ -100,12 +101,19 @@ const int numPaintings = 3;
 
 
 PCA9546 MP(0x70, &Wire2);
+PCA9546 MP2(0x71, &Wire2)
 
-PaintingPinsI2C paintingi2c(15,14,26,27, 24, 25, MP, 0);
+PaintingPinsI2c p1(1, 0, 99, 19, 25, 24, MP, 0);
+PaintingPinsI2c p2(3, 2, 99, 18, 25, 24, MP, 1);
+PaintingPinsI2c p3(5, 4, 99, 17, 25, 24, MP, 2);
 
+int numPaintings = 3;
+PaintingPins* allPaintings[numPaintings] = {&p1, &p2, &p3};
+PaintingManager manager(allPaintings, numPaintings);
 
 void setup() {
   Serial.begin(115200);
+  Serial1.begin(115200);
   // manager.begin();
   paintingi2c.begin();
 }
@@ -116,9 +124,7 @@ void loop() {
   if (millis() - lastTime >= 100)
   {
     lastTime = millis();
-    // readInputManager(&manager);
-    // readInputPainting(&p1);
-    readInputPainting(&paintingi2c);
+    readInputManager(&manager, &Serial1);
   }
 
 
