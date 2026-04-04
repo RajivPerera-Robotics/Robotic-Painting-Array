@@ -73,6 +73,7 @@ void setup() {
   server.on("/command", []() {
     String cmd = server.arg("cmd");
     Serial2.println(cmd);
+    Serial.println(cmd);
     server.send(200, "text/plain", "ok");
   });
 
