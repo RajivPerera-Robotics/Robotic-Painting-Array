@@ -28,6 +28,7 @@ bool isValidNumber(String str) {
 }
 
 void readInputPainting(PaintingPins* painting){
+    painting->update();
     if (Serial.available() > 0) {
       String input = Serial.readStringUntil('\n');
       input.trim();
@@ -45,10 +46,18 @@ void readInputPainting(PaintingPins* painting){
       else if (input == "dr") painting->drive(-MTR_MIN); // drive reverse
       else if (input == "s") painting->drive(0); // stop
       else if (isValidNumber(input)) {
+        if (input < 30 && input > 0){
+          Serial.print("Analog read pin ");
+          Serial.print(input);
+          Serial.print(" : ");
+          Serial.println(analogRead(input.toInt()));
+        }
+        else{
         Serial.print("moving to ");
         Serial.print(input);
         Serial.println(" degrees");
         painting->degreeMove(input.toInt(), 20, 1);
+        }
       } 
       else Serial.println("Invalid input: please enter a whole number between -256 and 256.");
     }
@@ -74,7 +83,16 @@ void readInputManager(PaintingManager* manager, Stream& serial){
     else if (input == "rev 90 abs") manager->degreeMoveAll(90, false, -MTR_MIN);
     else if (input == "rev 45 rel") manager->degreeMoveAll(45, true, -MTR_MIN);
     else if (input == "rev 45 abs") manager->degreeMoveAll(45, false, -MTR_MIN);
+    else if (isValidNumber(input)) {
+    if (input < 30 && input > 0){
+      Serial.print("Analog read pin ");
+      Serial.print(input);
+      Serial.print(" : ");
+      Serial.println(analogRead(input.toInt()));
     }
+
+    }
+}
 }
 
 
@@ -102,9 +120,9 @@ const int boundary = 256;
 PCA9546 MP(0x70, &Wire2);
 PCA9546 MP2(0x71, &Wire2);
 
-PaintingPinsI2C p1(0, 1, 99, 19, 25, 24, MP, 0);
-PaintingPinsI2C p2(2, 3, 99, 18, 25, 24, MP, 1);
-PaintingPinsI2C p3(4, 5, 99, 17, 25, 24, MP, 2);
+PaintingPinsI2C p1(0, 1, 99, 20, 25, 24, MP, 0);
+PaintingPinsI2C p2(2, 3, 99, 19, 25, 24, MP, 1);
+PaintingPinsI2C p3(4, 5, 99, 18, 25, 24, MP, 2);
 
 const int numPaintings = 3;
 PaintingPins* allPaintings[numPaintings] = {&p1, &p2, &p3};
@@ -114,7 +132,7 @@ void setup() {
   Serial.begin(115200);
   Serial8.begin(115200);
   // manager.begin();
-  p1.begin();
+  p3.begin();
 }
 
 void loop() {
@@ -123,7 +141,7 @@ void loop() {
   if (millis() - lastTime >= 100)
   {
     lastTime = millis();
-    readInputPainting(&p1);
+    readInputPainting(&p3);
     // readInputManager(&manager, Serial);
   }
 

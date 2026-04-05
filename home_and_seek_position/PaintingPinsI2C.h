@@ -27,8 +27,8 @@ public:
         Wire2.begin();
         if (multiplexer.begin()==false){
             Serial.print("Multiplexer not connected");
-            Serial.print(" for board on multiplexer ");
-            Serial.print(multChannel);
+            Serial.print(" for board on multiplexer channel ");
+            Serial.println(multChannel);
         }
         multiplexer.enableChannel(multChannel);
         as5600.begin();
