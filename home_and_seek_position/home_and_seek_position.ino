@@ -44,19 +44,30 @@ void readInputPainting(PaintingPins* painting){
       }
       else if (input == "df") painting->drive(MTR_MIN);// drive forward
       else if (input == "dr") painting->drive(-MTR_MIN); // drive reverse
-      else if (input == "s") painting->drive(0); // stop
+      else if (input == "s") {
+        painting->drive(0); 
+        painting->setIdle();
+      // stop
+      }
       else if (isValidNumber(input)) {
-        if (input < 30 && input > 0){
-          Serial.print("Analog read pin ");
+        if (input.toInt() < 100 && input.toInt()  > -100){
+          // Serial.print("Analog read pin ");
+          // Serial.print(input);
+          // Serial.print(" : ");
+          // Serial.println(analogRead(input.toInt()));
+
+          // painting->velocityPID(input.toFloat());
+          Serial.print("Moving to ");
           Serial.print(input);
-          Serial.print(" : ");
-          Serial.println(analogRead(input.toInt()));
+          Serial.println("degrees");
+          painting->degreeMove(input.toInt(), 30, 10);
+
         }
         else{
         Serial.print("moving to ");
         Serial.print(input);
         Serial.println(" degrees");
-        painting->degreeMove(input.toInt(), 20, 1);
+        painting->degreeMove(input.toInt(), MTR_MIN, 2);
         }
       } 
       else Serial.println("Invalid input: please enter a whole number between -256 and 256.");
@@ -123,26 +134,32 @@ PCA9546 MP2(0x71, &Wire2);
 PaintingPinsI2C p1(0, 1, 99, 20, 25, 24, MP, 0);
 PaintingPinsI2C p2(2, 3, 99, 19, 25, 24, MP, 1);
 PaintingPinsI2C p3(4, 5, 99, 18, 25, 24, MP, 2);
+PaintingPinsI2C p4(6, 7, 99, 17, 25, 24, MP, 3);
+PaintingPinsI2C p5(8, 9, 99, 16, 25, 24, MP, 4);
+PaintingPinsI2C p6(10, 11, 99, 15, 25, 24, MP2, 0);
+PaintingPinsI2C p7(28, 29, 99, 14, 25, 24, MP2, 1);
+PaintingPinsI2C p8(23, 22, 99, 41, 25, 24, MP2, 2);
+PaintingPinsI2C p9(37, 36, 99, 40, 25, 24, MP2, 3);
 
-const int numPaintings = 3;
-PaintingPins* allPaintings[numPaintings] = {&p1, &p2, &p3};
+const int numPaintings = 9;
+PaintingPins* allPaintings[numPaintings] = {&p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8, &p9};
 PaintingManager manager(allPaintings, numPaintings);
 
 void setup() {
   Serial.begin(115200);
   Serial8.begin(115200);
-  // manager.begin();
-  p3.begin();
+  manager.begin();
+  // p1.begin();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   static uint32_t lastTime = 0;
-  if (millis() - lastTime >= 100)
+  if (millis() - lastTime >= 10)
   {
     lastTime = millis();
-    readInputPainting(&p3);
-    // readInputManager(&manager, Serial);
+    // readInputPainting(&p1);
+    readInputManager(&manager, Serial);
   }
 
 
