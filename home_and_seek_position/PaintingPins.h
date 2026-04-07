@@ -67,7 +67,6 @@ class PaintingPins{
     pinMode(revPin, OUTPUT);
     pinMode(encPin, INPUT);
     pinMode(homePin, INPUT);
-
   }
   void drive(int speed) {
 
@@ -103,6 +102,8 @@ class PaintingPins{
     return analogRead(homePin)<200;
   }
   void setIdle(){
+    drive(0);
+    resetVelocityPID();
     state = PaintingState::IDLE;
   }
   bool isIdle() {
@@ -168,8 +169,8 @@ class PaintingPins{
     }
     else{
       Serial.println("move completed");
-      drive(0);
-      state = PaintingState::IDLE;
+      setIdle();
+      
 }
   }
 // ── PID helpers ───────────────────────────────────────────────────────────────
@@ -381,6 +382,7 @@ void velocityPID(float targetDegPerSec,
       case PaintingState::VELOCITY_MOVE:
         velocityPID(_targetvel);
       case PaintingState::IDLE:
+        
         resetVelocityPID();
       default:
         break;

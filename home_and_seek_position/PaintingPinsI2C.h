@@ -8,29 +8,28 @@ class PaintingPinsI2C : public PaintingPins {
 private:
     AS5600 as5600;
     PCA9546& multiplexer;
-    int sdaPin, sclPin, dirPin, multChannel;
+    PCA9546& secondaryplexer;
+    int multChannel;
     
     float i2cEncoderOffset = 0;
 
 public:
     PaintingPinsI2C(int fwd_pin, int rev_pin, int enc_pin, int home_pin,
-                    int sda_pin, int scl_pin, PCA9546& multi_plexer, int mult_channel)
+                    PCA9546& multi_plexer, PCA9546& secondary_plexer, int mult_channel)
         : PaintingPins(fwd_pin, rev_pin, enc_pin, home_pin),
-          as5600(&Wire2), multiplexer(multi_plexer),
-          sdaPin(sda_pin), sclPin(scl_pin),
+          as5600(&Wire2), multiplexer(multi_plexer), secondaryplexer(secondary_plexer),
           multChannel(mult_channel) {}
 
     void begin() {
         PaintingPins::begin();
-        Wire2.setSDA(sdaPin);
-        Wire2.setSCL(sclPin);
-        Wire2.begin();
         if (multiplexer.begin()==false){
             Serial.print("Multiplexer not connected");
             Serial.print(" for board on multiplexer channel ");
             Serial.println(multChannel);
         }
-        multiplexer.enableChannel(multChannel);
+        secondaryplexer.disableAllChannels();
+        multiplexer.selectChannel(multChannel);
+        delayMicroseconds(100);
         as5600.begin();
         as5600.setDirection(AS5600_CLOCK_WISE);
         if (!as5600.isConnected()) {
@@ -42,12 +41,13 @@ public:
     }
 
     float readEncoder() override {
-        multiplexer.enableChannel(multChannel);
+        secondaryplexer.disableAllChannels();
+        multiplexer.selectChannel(multChannel);
+        delayMicroseconds(100);
         return as5600.readAngle() * (360.0f/4096.0f);
     }
 
     void zeroI2C() {
-        multiplexer.enableChannel(multChannel);
         i2cEncoderOffset = as5600.readAngle() / 10.0f;
     }
 
@@ -56,7 +56,9 @@ public:
     }
 
     bool isI2CConnected() {
-        multiplexer.enableChannel(multChannel);
+        secondaryplexer.disableAllChannels();
+        multiplexer.selectChannel(multChannel);
+        delayMicroseconds(100);
         return as5600.isConnected();
     }
 };

@@ -51,16 +51,16 @@ void readInputPainting(PaintingPins* painting){
       }
       else if (isValidNumber(input)) {
         if (input.toInt() < 100 && input.toInt()  > -100){
-          // Serial.print("Analog read pin ");
-          // Serial.print(input);
-          // Serial.print(" : ");
-          // Serial.println(analogRead(input.toInt()));
+          Serial.print("Analog read pin ");
+          Serial.print(input);
+          Serial.print(" : ");
+          Serial.println(analogRead(input.toInt()));
 
           // painting->velocityPID(input.toFloat());
-          Serial.print("Moving to ");
-          Serial.print(input);
-          Serial.println("degrees");
-          painting->degreeMove(input.toInt(), 30, 10);
+          // Serial.print("Moving to ");
+          // Serial.print(input);
+          // Serial.println("degrees");
+          // painting->degreeMove(input.toInt(), 30, 10);
 
         }
         else{
@@ -94,6 +94,8 @@ void readInputManager(PaintingManager* manager, Stream& serial){
     else if (input == "rev 90 abs") manager->degreeMoveAll(90, false, -MTR_MIN);
     else if (input == "rev 45 rel") manager->degreeMoveAll(45, true, -MTR_MIN);
     else if (input == "rev 45 abs") manager->degreeMoveAll(45, false, -MTR_MIN);
+    else if (input == "s") manager->stop();
+    else if (input == "e") manager->readEncoder();
     else if (isValidNumber(input)) {
     if (input < 30 && input > 0){
       Serial.print("Analog read pin ");
@@ -131,25 +133,39 @@ const int boundary = 256;
 PCA9546 MP(0x70, &Wire2);
 PCA9546 MP2(0x71, &Wire2);
 
-PaintingPinsI2C p1(0, 1, 99, 20, 25, 24, MP, 0);
-PaintingPinsI2C p2(2, 3, 99, 19, 25, 24, MP, 1);
-PaintingPinsI2C p3(4, 5, 99, 18, 25, 24, MP, 2);
-PaintingPinsI2C p4(6, 7, 99, 17, 25, 24, MP, 3);
-PaintingPinsI2C p5(8, 9, 99, 16, 25, 24, MP, 4);
-PaintingPinsI2C p6(10, 11, 99, 15, 25, 24, MP2, 0);
-PaintingPinsI2C p7(28, 29, 99, 14, 25, 24, MP2, 1);
-PaintingPinsI2C p8(23, 22, 99, 41, 25, 24, MP2, 2);
-PaintingPinsI2C p9(37, 36, 99, 40, 25, 24, MP2, 3);
 
-const int numPaintings = 9;
-PaintingPins* allPaintings[numPaintings] = {&p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8, &p9};
+PaintingPinsI2C p1(0, 1, 99, 20, MP,MP2, 0);
+PaintingPinsI2C p2(2, 3, 99, 19, MP,MP2, 1);
+PaintingPinsI2C p3(4, 5, 99, 18, MP,MP2, 2);
+PaintingPinsI2C p4(6, 7, 99, 17, MP,MP2, 3);
+PaintingPinsI2C p5(8, 9, 99, 16, MP,MP2, 4);
+PaintingPinsI2C p6(10, 11, 99, 15, MP2, MP, 0);
+PaintingPinsI2C p7(28, 12, 99, 14, MP2, MP, 1);
+PaintingPinsI2C p8(23, 22, 99, 41, MP2, MP, 2);
+PaintingPinsI2C p9(37, 36, 99, 40, MP2, MP, 3);
+
+// const int numPaintings = 9;
+// PaintingPinsI2C* allPaintings[numPaintings] = {&p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8, &p9};
+// PaintingManager manager(allPaintings, numPaintings);
+
+const int numPaintings = 6;
+PaintingPinsI2C* allPaintings[numPaintings] = { &p4, &p5, &p6, &p7, &p8, &p9};
 PaintingManager manager(allPaintings, numPaintings);
+
+// const int numPaintings = 1;
+// PaintingPinsI2C* allPaintings[numPaintings] = { &p6 };
+// PaintingManager manager(allPaintings, numPaintings);
+
 
 void setup() {
   Serial.begin(115200);
   Serial8.begin(115200);
+  Wire2.setSDA(25);
+  Wire2.setSCL(24);
+  Wire2.begin();
+
   manager.begin();
-  // p1.begin();
+  // p4.begin();
 }
 
 void loop() {
@@ -158,7 +174,7 @@ void loop() {
   if (millis() - lastTime >= 10)
   {
     lastTime = millis();
-    // readInputPainting(&p1);
+    // readInputPainting(&p4);
     readInputManager(&manager, Serial);
   }
 

@@ -4,13 +4,13 @@
 
 class PaintingManager {
 private:
-  PaintingPins** paintings;
+  PaintingPinsI2C** paintings;
   int numPaintings;
 
 public:
-  PaintingManager(PaintingPins* p[], int count)
+  PaintingManager(PaintingPinsI2C* p[], int count)
     : numPaintings(count) {
-    paintings = new PaintingPins*[count];
+    paintings = new PaintingPinsI2C*[count];
     for (int i = 0; i < count; i++) paintings[i] = p[i];
   }
 
@@ -68,6 +68,19 @@ public:
       }
       else{paintings[i]->delayDegreeMove(targetPos, delayMs * i, speed);}
     }
+  }
+  void stop(){
+    for (int i = 0; i < numPaintings; i++) {
+      paintings[i]->setIdle();
+    }
+  }
+  void readEncoder(){
+    for (int i = 0; i < numPaintings; i++) {
+      Serial.print(i);
+      Serial.print(" encoder: ");
+      Serial.println(paintings[i]->normalizedEncoder());
+    }
+
   }
   void homeAll(int speed) {
     for (int i = 0; i < numPaintings; i++) {
