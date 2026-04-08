@@ -79,25 +79,26 @@ void readInputManager(PaintingManager* manager, Stream& serial){
     if (serial.available() > 0) {
       String input = serial.readStringUntil('\n');
       input.trim();
-    if (input == "cascade home") manager->cascadeHome(MTR_MIN);
-    else if (input == "cascade 90 rel") manager->cascadeMoveAll(90, true, CASCADE_DELAY);
-    else if (input == "cascade 90 abs") manager->cascadeMoveAll(90, false, CASCADE_DELAY);
-    else if (input == "cascade 45 rel") manager->cascadeMoveAll(45, true, CASCADE_DELAY);
-    else if (input == "cascade 45 abs") manager->cascadeMoveAll(45, false, CASCADE_DELAY);
-    else if (input == "cascade rev") manager->cascadeMoveAll(45, 1000, CASCADE_DELAY);
+    if (input == "cascade home") manager->cascadeHome();
+    else if (input == "cascade 1") manager->cascadeMoveAll(MTR_MIN, 1000, CASCADE_DELAY);
+    else if (input == "cascade 2") manager->cascadeMoveAll(MTR_MIN, 2000, CASCADE_DELAY);
+    else if (input == "cascade -1") manager->cascadeMoveAll(-MTR_MIN, 1000, CASCADE_DELAY);
+    else if (input == "cascade -2") manager->cascadeMoveAll(-MTR_MIN, 2000, CASCADE_DELAY);    
+    else if (input == "cascade 1") manager->cascadeMoveAll(MTR_MIN, 1000, CASCADE_DELAY);
+    else if (input == "long home") manager->cascadeTimedMoveThenHome(MTR_MIN, 15000, 2000, true);
+    else if (input == "r" ) manager->cascadeMoveAll(MTR_MIN, 1000, CASCADE_DELAY, true);
+    else if (input == "rr" ) manager->cascadeMoveAll(-MTR_MIN, 1000, CASCADE_DELAY, true);
+    else if (input == "rh" ) manager->cascadeHome(500, MTR_MIN, true);
+    else if (input == "1") manager->timedMoveAll(MTR_MIN, 1000);
+    else if (input == "2") manager->timedMoveAll(MTR_MIN, 2000);
+    else if (input == "-1") manager->timedMoveAll(-MTR_MIN, 1000);
+    else if (input == "-2") manager->timedMoveAll(-MTR_MIN, 2000);    
     else if (input == "homeall") manager->homeAll(MTR_MIN);
-    else if (input == "fwd 90 rel") manager->degreeMoveAll(90, true);
-    else if (input == "fwd 90 abs") manager->degreeMoveAll(90, false);
-    else if (input == "fwd 45 rel") manager->degreeMoveAll(45, true);
-    else if (input == "fwd 45 abs") manager->degreeMoveAll(45, false);
-    else if (input == "rev 90 rel") manager->degreeMoveAll(90, true, -MTR_MIN);
-    else if (input == "rev 90 abs") manager->degreeMoveAll(90, false, -MTR_MIN);
-    else if (input == "rev 45 rel") manager->degreeMoveAll(45, true, -MTR_MIN);
-    else if (input == "rev 45 abs") manager->degreeMoveAll(45, false, -MTR_MIN);
     else if (input == "s") manager->stop();
     else if (input == "e") manager->readEncoder();
+    else if (input == "h") manager->readHome();
     else if (isValidNumber(input)) {
-    if (input < 30 && input > 0){
+    if (input < 2 && input > 0){
       Serial.print("Analog read pin ");
       Serial.print(input);
       Serial.print(" : ");
@@ -141,8 +142,8 @@ PaintingPinsI2C p4(6, 7, 99, 17, MP,MP2, 3);
 PaintingPinsI2C p5(8, 9, 99, 16, MP,MP2, 4);
 PaintingPinsI2C p6(10, 11, 99, 15, MP2, MP, 0);
 PaintingPinsI2C p7(28, 12, 99, 14, MP2, MP, 1);
-PaintingPinsI2C p8(23, 22, 99, 41, MP2, MP, 2);
-PaintingPinsI2C p9(37, 36, 99, 40, MP2, MP, 3);
+PaintingPinsI2C p8(37, 36, 99, 41, MP2, MP, 2);
+PaintingPinsI2C p9(23, 22, 99, 40, MP2, MP, 3);
 
 // const int numPaintings = 9;
 // PaintingPinsI2C* allPaintings[numPaintings] = {&p1, &p2, &p3, &p4, &p5, &p6, &p7, &p8, &p9};
@@ -165,18 +166,15 @@ void setup() {
   Wire2.begin();
 
   manager.begin();
-  // p4.begin();
+  // p5.begin();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   static uint32_t lastTime = 0;
-  if (millis() - lastTime >= 10)
-  {
     lastTime = millis();
-    // readInputPainting(&p4);
+    // readInputPainting(&p5);
     readInputManager(&manager, Serial);
-  }
 
 
   }

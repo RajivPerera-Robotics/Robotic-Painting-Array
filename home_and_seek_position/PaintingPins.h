@@ -1,18 +1,22 @@
 #pragma once
 // #include AS5600.h
-
-const int MTR_MIN = 20;
+// 23
+const int MTR_MIN = 26;
 const int MTR_MAX = 40;
+const int HOME_READJUST_MS = 75;
 const float TARGET_VEL = 30;
-const int CASCADE_DELAY = 500;
+const int CASCADE_DELAY = 1000;
 const float POSITION_TOLERANCE = .5;
 enum class PaintingState {
   IDLE,
-  HOMING,           // driving until home sensor triggers
+  HOMING,                 // driving until home sensor triggers
   VELOCITY_MOVE,
-  DEGREE_MOVE,       // moving for a fixed duration
-  HOME_DELAY,       // cascade delay before starting
-  MOVE_DELAY        // cascade delay before a degree move
+  TIMED_MOVE,
+  TIMED_MOVE_THEN_HOME,   // timed move followed by automatic homing
+  DEGREE_MOVE,            // moving for a fixed duration
+  HOME_DELAY,             // cascade delay before starting
+  MOVE_DELAY,             // cascade delay before a degree move
+  MOVE_DELAY_THEN_HOME    // cascade delay before a timed-move-then-home
 };
 
 
@@ -25,6 +29,11 @@ class PaintingPins{
     int driveSpeed = MTR_MIN;
     float targetPos = 0;
     PaintingState state = PaintingState::IDLE;
+    
+    
+    uint32_t moveStartTime = 0;
+    uint32_t moveDuration = 0;
+
 
     // For TIMED_MOVE
     // For HOME_DELAY (cascade)
@@ -135,10 +144,53 @@ class PaintingPins{
           encoderOffset = readEncoder();
           state = PaintingState::IDLE;
           Serial.println("Homed.");
+          startTimedMove(-MTR_MIN, 75);
         } 
       else {
           drive(driveSpeed);
         }
+  }
+
+  void delayTimedMove(int speed, uint32_t durationMs, uint32_t delayMs){
+    driveSpeed = speed;
+    if (delayMs > 0){
+      waitStartTime = millis();
+      waitDuration = delayMs;
+      moveDuration = durationMs;
+      state = PaintingState::MOVE_DELAY;
+    }
+    else{
+      startTimedMove(speed, durationMs);
+    }
+    
+
+  }
+  void startTimedMoveThenHome(int speed, uint32_t durationMs) {
+    driveSpeed = speed;
+    moveStartTime = millis();
+    moveDuration = durationMs;
+    state = PaintingState::TIMED_MOVE_THEN_HOME;
+    drive(driveSpeed);
+  }
+
+  void delayTimedMoveThenHome(int speed, uint32_t durationMs, uint32_t delayMs) {
+    driveSpeed = speed;
+    moveDuration = durationMs;
+    if (delayMs > 0) {
+      waitStartTime = millis();
+      waitDuration = delayMs;
+      state = PaintingState::MOVE_DELAY_THEN_HOME;
+    } else {
+      startTimedMoveThenHome(speed, durationMs);
+    }
+  }
+
+  void startTimedMove(int speed, uint32_t durationMs) {
+    driveSpeed = speed;
+    moveStartTime = millis();
+    moveDuration = durationMs;
+    state = PaintingState::TIMED_MOVE;
+    drive(driveSpeed);
   }
 
   void delayDegreeMove(uint32_t targetPos,  uint32_t delayMs, int speed=MTR_MIN, float tolerance=POSITION_TOLERANCE){
@@ -367,8 +419,21 @@ void velocityPID(float targetDegPerSec,
         break;
 
       case PaintingState::MOVE_DELAY:
-        if (millis()- waitStartTime >= waitDuration){
-          degreeMove(targetPos, MTR_MIN, POSITION_TOLERANCE);
+        if (millis() - waitStartTime >= waitDuration){
+          startTimedMove(driveSpeed, moveDuration);
+        }
+        break;
+
+      case PaintingState::MOVE_DELAY_THEN_HOME:
+        if (millis() - waitStartTime >= waitDuration){
+          startTimedMoveThenHome(driveSpeed, moveDuration);
+        }
+        break;
+
+      case PaintingState::TIMED_MOVE_THEN_HOME:
+        if (millis() - moveStartTime >= moveDuration) {
+          driveSpeed = MTR_MIN;
+          state = PaintingState::HOMING;
         }
         break;
       case PaintingState::HOMING:
@@ -377,10 +442,17 @@ void velocityPID(float targetDegPerSec,
 
       case PaintingState::DEGREE_MOVE:
         degreeMove(targetPos, driveSpeed, POSITION_TOLERANCE);
-        // else: keep driving — already set in startTimedMove()
         break;
       case PaintingState::VELOCITY_MOVE:
         velocityPID(_targetvel);
+    case PaintingState::TIMED_MOVE:
+        if (millis() - moveStartTime >= moveDuration) {
+          drive(0);
+          state = PaintingState::IDLE;
+        }
+        // else: keep driving — already set in startTimedMove()
+        break;
+
       case PaintingState::IDLE:
         
         resetVelocityPID();

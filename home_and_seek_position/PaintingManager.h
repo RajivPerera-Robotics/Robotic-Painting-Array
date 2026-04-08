@@ -42,9 +42,17 @@ public:
     return true;
   }
 
-  void cascadeHome(uint32_t stepDelayMs = 500, int speed=MTR_MIN) {
+  void cascadeHome(uint32_t stepDelayMs = 500, int speed=MTR_MIN, bool random=false) {
+    int order[numPaintings];
+    for (int i = 0; i < numPaintings; i++) order[i] = i;
+    if (random) {
+      for (int i = numPaintings - 1; i > 0; i--) {
+        int j = ::random(i + 1);
+        int tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+      }
+    }
     for (int i = 0; i < numPaintings; i++) {
-      paintings[i]->delayHoming(speed, i * stepDelayMs);
+      paintings[order[i]]->delayHoming(speed, i * stepDelayMs);
     }
   }
 
@@ -69,6 +77,42 @@ public:
       else{paintings[i]->delayDegreeMove(targetPos, delayMs * i, speed);}
     }
   }
+  void cascadeMoveAll(int speed, uint32_t durationMs, uint32_t delayMs, bool random=false){
+    int order[numPaintings];
+    for (int i = 0; i < numPaintings; i++) order[i] = i;
+    if (random) {
+      for (int i = numPaintings - 1; i > 0; i--) {
+        int j = ::random(i + 1);
+        int tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+      }
+    }
+    for (int i = 0; i < numPaintings; i++){
+      paintings[order[i]]->delayTimedMove(speed, durationMs, delayMs*i);      
+      Serial.println(delayMs*i);
+    }
+  }
+
+  void cascadeTimedMoveThenHome(int speed, uint32_t durationMs, uint32_t delayMs, bool random=false) {
+    int order[numPaintings];
+    for (int i = 0; i < numPaintings; i++) order[i] = i;
+    if (random) {
+      for (int i = numPaintings - 1; i > 0; i--) {
+        int j = ::random(i + 1);
+        int tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+      }
+    }
+    for (int i = 0; i < numPaintings; i++) {
+      paintings[order[i]]->delayTimedMoveThenHome(speed, durationMs, delayMs * i);
+    }
+  }
+
+  void timedMoveAll(int speed, uint32_t durationMs) {
+    for (int i = 0; i < numPaintings; i++) {
+      paintings[i]->startTimedMove(speed, durationMs);
+    }
+  }
+
+
   void stop(){
     for (int i = 0; i < numPaintings; i++) {
       paintings[i]->setIdle();
@@ -79,6 +123,14 @@ public:
       Serial.print(i);
       Serial.print(" encoder: ");
       Serial.println(paintings[i]->normalizedEncoder());
+    }
+
+  }
+  void readHome(){
+    for (int i = 0; i < numPaintings; i++) {
+        Serial.print(i);
+        Serial.print(" : ");
+        Serial.println(paintings[i]->readHome());
     }
 
   }
